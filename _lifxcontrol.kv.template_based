@@ -1,0 +1,78 @@
+#:kivy 1.0.9
+<DataView@BoxLayout>:
+    spacing: 10
+    cols:2
+
+<LampInfo@GridLayout>:
+    spacing: 20
+    cols: 2
+
+[DataViewItem@BoxLayout]:
+    Image:
+        source: ctx.thumbnail
+    Button:
+        text: ctx.title
+
+<LifxController>:
+    lamps: lamp_grid
+    data:  data_view
+
+    BoxLayout:
+        orientation:    'vertical'
+        top:            root.top
+        center_x:       root.width/2
+
+
+        HeadingLabel:
+            text: 'All Devices'
+
+        LampInfo:
+            id: lamp_grid
+
+            #LampInfoItem:
+            #    text: "Lamp 1"
+            Label:
+                text: "Lamp 2"
+            Label:
+                text: "Lamp 3"
+        DataView:
+            id: data_view
+
+
+[LampInfoItem@GridLayout]:
+    spacing: 10
+    cols: 2
+    Label:
+        text: "Name"
+        bold: True
+    Label:
+        text: ctx.name
+    Label:
+        text: "Addr"
+        bold: True
+    Label:
+        text: ctx.addr
+    Label:
+        text: "power"
+        bold: True
+    Label:
+        text: ctx.power
+
+<Label>:
+    font_size: 20
+    padding: dp(6), dp(4)
+    text_size: None, None
+    #size: self.texture_size
+    #size: self.texture_size
+
+    #size_hint_x: 0.5
+
+
+<HeadingLabel@Label>:
+    bold: True
+    padding: dp(6), dp(4)
+    valign: 'top'
+    #height: self.texture_size[1]
+    font_size: 36
+    text_size: None, None
+    #size_hint: None, None

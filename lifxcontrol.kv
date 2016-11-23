@@ -1,0 +1,118 @@
+#:kivy 1.9.0
+<Widget>:
+    canvas.after:
+        Line:
+            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
+            dash_offset: 5
+            dash_length: 3
+
+<LampInfo@GridLayout>:
+    spacing: 20
+    padding: 40
+    rows: 2
+    size_hint_x: 0.3
+
+<DataViewItem@BoxLayout>:
+    did:   self.did
+    thumb: self.thumb
+    title: self.title
+
+    spacing: 20
+    padding: 30
+    cols:2
+    #width: 200
+    #height:100
+    size_hint: 1,None
+
+    #Image:
+    #    source: root.thumb
+    #    size: 48,48
+    Label:
+        text: root.thumb
+        font_size: 20
+        text_size: self.width, None
+        color: 0,1,0,0.5
+    Label:
+        text: root.title
+        font_size: 20
+        padding: dp(6), dp(4)
+        text_size: self.width, None
+
+<DataView2@BoxLayout>:
+    data_view2: data_view2
+
+    id:   data_view2
+    spacing: 20
+    cols:2
+
+    DataViewItem:
+        did: "0"
+        thumb: "img/img3.png"
+        title: "No. 1"
+
+<LifxController>:
+    lamp_grid: lamp_grid
+    #data:  data_view2
+
+    BoxLayout:
+        orientation:    'vertical'
+        top:            root.top
+        center_x:       root.width/2
+
+
+        HeadingLabel:
+            text: 'All Devices'
+
+        LampInfo:
+            id: lamp_grid
+            DataViewItem:
+                did: "0"
+                thumb: "img/img3.png"
+                title: "No. 2"
+            #LampInfoItem:
+            #    text: "Lamp 1"
+            #Label:
+            #    text: "Lamp 2"
+            #Label:
+            #    text: "Lamp 3"
+        #DataView2:
+            #id: data_view2
+
+
+[LampInfoItem@GridLayout]:
+    spacing: 10
+    cols: 2
+    Label:
+        text: "Name"
+        bold: True
+    Label:
+        text: ctx.name
+    Label:
+        text: "Addr"
+        bold: True
+    Label:
+        text: ctx.addr
+    Label:
+        text: "power"
+        bold: True
+    Label:
+        text: ctx.power
+
+<Label>:
+    font_size: 20
+    padding: dp(6), dp(4)
+    text_size: None, None
+    #size: self.texture_size
+    #size: self.texture_size
+
+    #size_hint_x: 0.5
+
+
+<HeadingLabel@Label>:
+    bold: True
+    padding: dp(6), dp(4)
+    valign: 'top'
+    #height: self.texture_size[1]
+    font_size: 36
+    text_size: None, None
+    #size_hint: None, None

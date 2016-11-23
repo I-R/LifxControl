@@ -1,0 +1,27 @@
+#:kivy 1.0.9
+
+<LifxControler>:
+  BoxLayout:
+    orientation: 'vertical'
+
+    Label:
+      text: 'All Devices'
+
+    StackLayout:
+        #id: device_table
+        cols: 2
+
+        Label:
+            text: "Lamp 1"
+
+        Label:
+            text: "Lamp 2"
+
+
+<HeadingLabel@Label>:
+    bold: True
+    padding: dp(6), dp(4)
+    valign: 'bottom'
+    height: self.texture_size[1]
+    text_size: self.width, None
+    size_hint_y: None
