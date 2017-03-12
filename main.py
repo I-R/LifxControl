@@ -1,14 +1,19 @@
 from kivy.app import App
+from kivy.clock import Clock
+from kivy.factory import Factory
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.boxlayout   import BoxLayout
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty, ReferenceListProperty,\
     ObjectProperty
 from kivy.vector import Vector
-from kivy.clock import Clock
+
+from kivy.core.window import Window
+from kivy.modules import inspector
 
 from datetime import datetime,timedelta
 import json
+import os.path
 import socket
 import uuid
 
@@ -21,16 +26,19 @@ class DataViewItem(BoxLayout):
 
 class LifxController(Widget):
     lightsd_socket = None
+    lightsd_socket_file = "/run/lightsd/socket"
     lightsd_devices= {}
 
-    def build(self):
+    def connect(self):
         # Connect to lightsd, here using an Unix socket. The rest of the example is
         # valid for TCP sockets too. Replace /run/lightsd/socket by the output of:
         # echo $(lightsd --rundir)/socket
-        self.lightsd_socket = socket.socket(socket.AF_UNIX)
-        self.lightsd_socket.connect("/run/lightsd/socket")
-        self.lightsd_socket.settimeout(2)  # seconds
-        print( "Build called")
+        if os.path.exists( self.lightsd_socket_file ):
+            self.lightsd_socket = socket.socket(socket.AF_UNIX)
+            self.lightsd_socket.connect( self.lightsd_socket_file )
+            self.lightsd_socket.settimeout(2)  # seconds
+        print( "Connect called")
+
 
     def update(self, dt):
         print ( "TS:", dt )
@@ -39,6 +47,7 @@ class LifxController(Widget):
 
         state = response['result']
         print( "State:", state)
+        print( "Devices: ", ",".join( self.lightsd_devices.keys() ))
         self.__lightsd_populate( state )
 
     # Helper Functions:
@@ -58,35 +67,40 @@ class LifxController(Widget):
                 continue
 
             if not addr in addrs:
-                self.lightsd_devices['addr'] = {
+                self.lightsd_devices[addr] = {
                     'raw': device,
                     'ts' : ts,
                     'state' : 'NEW'
                     }
                 self.__lightsd_device_found( addr )
             else:
-                self.lightsd_devices['addr'] = {
+                self.lightsd_devices[addr] = {
                     'raw': device,
                     'ts' : ts,
                     'state' : 'KNOWN'
                     }
-                addrs.remove( addr )
 
         for addr in addrs:
-            if ts - self.lightsd_devices[addr]['ts'] > timedelta(seconds=30):
+            if ts - self.lightsd_devices[addr]['ts'] > timedelta(seconds=10):
                 # Automatic remove of device  after 30s !?
                 #self.lightsd_devices.remove(addr)
                 pass
 
-            self.lightsd_devices[addr]['state']="LOST"
-            self.__lightsd_device_lost( addr )
+                self.lightsd_devices[addr]['state']="LOST"
+                self.__lightsd_device_lost( addr )
 
     def __lightsd_device_found(self, addr ):
         __doc__="Handle new device"
-        pass
+        print("New Device {:s}".format(addr))
+        self.lightsd_devices[addr]['widget']=Factory.DataViewItem()
+        self.lightsd_devices[addr]['widget'].title = self.lightsd_devices[addr]['raw']['label']
+        self.ids.lamp_grid.add_widget( self.lightsd_devices[addr]['widget'] )
 
     def __lightsd_device_lost(self, addr ):
         __doc__="Handle lost device"
+        print("Remove Device {:s}".format(addr))
+        print("-> {!r}".format( self.lightsd_devices[addr].keys() ))
+        self.ids.lamp_grid.remove_widget( self.lightsd_devices[addr]['widget'] )
         pass
 
     def __lightsd_update_state(self, target=["*"]):
@@ -106,8 +120,10 @@ class LifxController(Widget):
 
     def __lightsd_send(self, request ):
         __doc__="Send command to socket"
-        self.lightsd_socket.sendall(request)
-
+        if self.lightsd_socket:
+            self.lightsd_socket.sendall(request)
+        else:
+            return {'id':0,'result':{}}
         # Prepare an empty buffer to accumulate the received data:
         response = bytearray()
         while True:
@@ -128,8 +144,8 @@ class LifxController(Widget):
 class LifxControlApp(App):
     def build(self):
         lc = LifxController()
-        lc.build()
-
+        lc.connect()
+        #inspector.create_inspector(Window, lc)
         Clock.schedule_interval( lc.update, 1.0 / 0.5 )
 
         return lc
